@@ -80,7 +80,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(Button), "Clicked")]
-		[Category(UITestCategories.Button)]
+		[Category(UITestCategories.UwpIgnore)]
 		public void Clicked()
 		{
 			var remote = new EventViewContainerRemote(App, Test.Button.Clicked, PlatformViewType);
@@ -111,7 +111,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(Button), "Font")]
-		[Category(UITestCategories.Button)]
+		[Category(UITestCategories.UwpIgnore)]
 		public void Font()
 		{
 			//TODO iOS
@@ -141,7 +141,7 @@ namespace Xamarin.Forms.Core.UITests
 
 		[Test]
 		[UiTest(typeof(Button), "Text")]
-		[Category(UITestCategories.Button)]
+		[Category(UITestCategories.UwpIgnore)]
 		public void Text()
 		{
 			var remote = new ViewContainerRemote(App, Test.Button.Text, PlatformViewType);

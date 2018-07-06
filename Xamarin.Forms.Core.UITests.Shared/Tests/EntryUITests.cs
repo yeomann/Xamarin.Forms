@@ -41,7 +41,7 @@ namespace Xamarin.Forms.Core.UITests
 		// Implement control specific ui tests
 		[Test]
 		[UiTest(typeof(Entry), "Completed")]
-		[Category(UITestCategories.Button)]
+		[Category(UITestCategories.UwpIgnore)]
 		public void Completed()
 		{
 			var remote = new EventViewContainerRemote(App, Test.Entry.Completed, PlatformViewType);
