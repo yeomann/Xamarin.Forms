@@ -22,6 +22,9 @@ namespace Xamarin.Forms.Platform.Android
 		ImeAction _currentInputImeFlag;
 		IElementController ElementController => Element as IElementController;
 
+		bool _cursorPositionChangePending = false;
+		bool _selectionLengthChangePending = false;
+
 		public EntryRenderer(Context context) : base(context)
 		{
 			AutoPackage = false;
@@ -88,6 +91,11 @@ namespace Xamarin.Forms.Platform.Android
 				_hintColorSwitcher = new TextColorSwitcher(textView.HintTextColors, useLegacyColorManagement);
 				SetNativeControl(textView);
 			}
+
+			// When we set the control text, it triggers the SelectionChanged event, which updates CursorPosition and SelectionLength;
+			// These one-time-use variables will let us initialize a CursorPosition and SelectionLength via ctor/xaml/etc.
+			_cursorPositionChangePending = Element.IsSet(Entry.CursorPositionProperty);
+			_selectionLengthChangePending = Element.IsSet(Entry.SelectionLengthProperty);
 
 			Control.Hint = Element.Placeholder;
 			Control.Text = Element.Text;
@@ -281,7 +289,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (Control == null || Element == null)
 				return;
-			
+
 			Control.ImeOptions = Element.ReturnType.ToAndroidImeAction();
 			_currentInputImeFlag = Control.ImeOptions;
 		}
@@ -292,14 +300,20 @@ namespace Xamarin.Forms.Platform.Android
 			if (control == null || Element == null)
 				return;
 
-			var start = Element.CursorPosition;
+			if (!_cursorPositionChangePending)
+			{
+				var start = Element.CursorPosition;
 
-			if (control.SelectionStart != start)
-				ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, control.SelectionStart);
+				if (control.SelectionStart != start)
+					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, control.SelectionStart);
+			}
 
-			var selectionLength = control.SelectionEnd - control.SelectionStart;
-			if (selectionLength != Element.SelectionLength)
-				ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+			if (!_selectionLengthChangePending)
+			{
+				var selectionLength = control.SelectionEnd - control.SelectionStart;
+				if (selectionLength != Element.SelectionLength)
+					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+			}
 		}
 
 
@@ -320,6 +334,8 @@ namespace Xamarin.Forms.Platform.Android
 					control.RequestFocus();
 				}
 			}
+
+			_cursorPositionChangePending = _selectionLengthChangePending = false;
 		}
 	}
 }
