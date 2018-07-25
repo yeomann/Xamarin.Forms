@@ -18,6 +18,9 @@ namespace Xamarin.Forms.Platform.UWP
 		Brush _textDefaultBrush;
 		Brush _defaultTextColorFocusBrush;
 		Brush _defaultPlaceholderColorFocusBrush;
+		bool _cursorPositionChangePending = false;
+		bool _selectionLengthChangePending = false;
+
 		IElementController ElementController => Element as IElementController;
 
 		protected override void OnElementChanged(ElementChangedEventArgs<Entry> e)
@@ -39,6 +42,11 @@ namespace Xamarin.Forms.Platform.UWP
 					textBox.UseFormsVsm = e.NewElement.HasVisualStateGroups()
 						|| !e.NewElement.OnThisPlatform().GetIsLegacyColorModeEnabled();
 				}
+
+				// When we set the control text, it triggers the SelectionChanged event, which updates CursorPosition and SelectionLength;
+				// These one-time-use variables will let us initialize a CursorPosition and SelectionLength via ctor/xaml/etc.
+				_cursorPositionChangePending = Element.IsSet(Entry.CursorPositionProperty);
+				_selectionLengthChangePending = Element.IsSet(Entry.SelectionLengthProperty);
 
 				UpdateIsPassword();
 				UpdateText();
@@ -183,8 +191,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateInputScope()
 		{
 			Entry entry = Element;
-			var custom = entry.Keyboard as CustomKeyboard;
-			if (custom != null)
+			if (entry.Keyboard is CustomKeyboard custom)
 			{
 				Control.IsTextPredictionEnabled = (custom.Flags & KeyboardFlags.Suggestions) != 0;
 				Control.IsSpellCheckEnabled = (custom.Flags & KeyboardFlags.Spellcheck) != 0;
@@ -280,14 +287,20 @@ namespace Xamarin.Forms.Platform.UWP
 			if (control == null || Element == null)
 				return;
 
-			var start = Element.CursorPosition;
+			if (!_cursorPositionChangePending)
+			{
+				var start = Element.CursorPosition;
 
-			if (control.SelectionStart != start)
-				ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, control.SelectionStart);
+				if (control.SelectionStart != start)
+					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, control.SelectionStart);
+			}
 
-			var selectionLength = control.SelectionLength;
-			if (selectionLength != Element.SelectionLength)
-				ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+			if (!_selectionLengthChangePending)
+			{
+				var selectionLength = control.SelectionLength;
+				if (selectionLength != Element.SelectionLength)
+					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+			}
 		}
 
 		void UpdateSelectionLength()
@@ -305,6 +318,8 @@ namespace Xamarin.Forms.Platform.UWP
 					control.Focus(FocusState.Programmatic);
 				}
 			}
+
+			_selectionLengthChangePending = false;
 		}
 
 		void UpdateCursorPosition()
@@ -322,6 +337,8 @@ namespace Xamarin.Forms.Platform.UWP
 					control.Focus(FocusState.Programmatic);
 				}
 			}
+
+			_cursorPositionChangePending = false;
 		}
 	}
 }
