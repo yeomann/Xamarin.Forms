@@ -24,15 +24,18 @@ namespace Xamarin.Forms.Platform.iOS
 		IDisposable _selectedTextRangeObserver;
 		bool _selectedTextRangeIsUpdating;
 
+		bool _cursorPositionChangePending = false;
+		bool _selectionLengthChangePending = false;
+
 		static readonly int baseHeight = 30;
 		static CGSize initialSize = CGSize.Empty;
 
-		public EntryRenderer() 
+		public EntryRenderer()
 		{
 			Frame = new RectangleF(0, 20, 320, 40);
 		}
 
-		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint) 
+		public override SizeRequest GetDesiredSize(double widthConstraint, double heightConstraint)
 		{
 			var baseResult = base.GetDesiredSize(widthConstraint, heightConstraint);
 
@@ -66,7 +69,7 @@ namespace Xamarin.Forms.Platform.iOS
 					Control.EditingDidBegin -= OnEditingBegan;
 					Control.EditingChanged -= OnEditingChanged;
 					Control.EditingDidEnd -= OnEditingEnded;
-                    Control.ShouldChangeCharacters -= ShouldChangeCharacters;
+					Control.ShouldChangeCharacters -= ShouldChangeCharacters;
 					_selectedTextRangeObserver?.Dispose();
 				}
 			}
@@ -99,9 +102,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 				textField.EditingDidBegin += OnEditingBegan;
 				textField.EditingDidEnd += OnEditingEnded;
-                textField.ShouldChangeCharacters += ShouldChangeCharacters;
+				textField.ShouldChangeCharacters += ShouldChangeCharacters;
 				_selectedTextRangeObserver = textField.AddObserver("selectedTextRange", NSKeyValueObservingOptions.New, UpdateCursorFromControl);
 			}
+
+			// When we set the control text, it triggers the UpdateCursorFromControl event, which updates CursorPosition and SelectionLength;
+			// These one-time-use variables will let us initialize a CursorPosition and SelectionLength via ctor/xaml/etc.
+			_cursorPositionChangePending = Element.IsSet(Entry.CursorPositionProperty);
+			_selectionLengthChangePending = Element.IsSet(Entry.SelectionLengthProperty);
 
 			UpdatePlaceholder();
 			UpdatePassword();
@@ -146,7 +154,7 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateColor();
 				UpdatePlaceholder();
 			}
-			else if (e.PropertyName == PlatformConfiguration.iOSSpecific.Entry.AdjustsFontSizeToFitWidthProperty.PropertyName)
+			else if (e.PropertyName == Specifics.AdjustsFontSizeToFitWidthProperty.PropertyName)
 				UpdateAdjustsFontSizeToFitWidth();
 			else if (e.PropertyName == VisualElement.FlowDirectionProperty.PropertyName)
 				UpdateAlignment();
@@ -164,6 +172,7 @@ namespace Xamarin.Forms.Platform.iOS
 
 		void OnEditingBegan(object sender, EventArgs e)
 		{
+			UpdateCursorSelection();
 			ElementController.SetValueFromRenderer(VisualElement.IsFocusedPropertyKey, true);
 		}
 
@@ -320,15 +329,28 @@ namespace Xamarin.Forms.Platform.iOS
 				return;
 
 			var currentSelection = control.SelectedTextRange;
-			int selectionLength = (int)control.GetOffsetFromPosition(currentSelection.Start, currentSelection.End);
-			int newCursorPosition = (int)control.GetOffsetFromPosition(control.BeginningOfDocument, currentSelection.Start);
 
-			_selectedTextRangeIsUpdating = true;
-			if (newCursorPosition != Element.CursorPosition)
-				ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, newCursorPosition);
+			if (!_cursorPositionChangePending)
+			{
+				int newCursorPosition = (int)control.GetOffsetFromPosition(control.BeginningOfDocument, currentSelection.Start);
+				if (newCursorPosition != Element.CursorPosition)
+				{
+					_selectedTextRangeIsUpdating = true;
+					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, newCursorPosition);
+				}
+			}
 
-			if (selectionLength != Element.SelectionLength)
-				ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+			if (!_selectionLengthChangePending)
+			{
+				int selectionLength = (int)control.GetOffsetFromPosition(currentSelection.Start, currentSelection.End);
+
+				if (selectionLength != Element.SelectionLength)
+				{
+					_selectedTextRangeIsUpdating = true;
+					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+				}
+			}
+
 			_selectedTextRangeIsUpdating = false;
 		}
 
@@ -338,9 +360,11 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_selectedTextRangeIsUpdating || control == null || Element == null)
 				return;
 
-			if (Element.IsSet(Entry.CursorPositionProperty) || Element.IsSet(Entry.SelectionLengthProperty)) {
-
-				control.BecomeFirstResponder();
+			// If this is run from the ctor, the control is likely too early in its lifecycle to be first responder yet. 
+			// Anything done here will have no effect, so we'll skip this work until later.
+			// We'll try again when the control does become first responder later OnEditingBegan
+			if (control.BecomeFirstResponder() && (Element.IsSet(Entry.CursorPositionProperty) || Element.IsSet(Entry.SelectionLengthProperty)))
+			{
 				var start = control.GetPosition(control.BeginningOfDocument, Element.CursorPosition);
 				var end = control.GetPosition(start, System.Math.Min(control.Text.Length - Element.CursorPosition, Element.SelectionLength));
 				var currentSelection = control.SelectedTextRange;
@@ -351,6 +375,8 @@ namespace Xamarin.Forms.Platform.iOS
 					_selectedTextRangeIsUpdating = false;
 				}
 			}
+
+			_cursorPositionChangePending = _selectionLengthChangePending = false;
 		}
 
 		void UpdateCursorColor()
@@ -369,6 +395,4 @@ namespace Xamarin.Forms.Platform.iOS
 			}
 		}
 	}
-
-
 }
