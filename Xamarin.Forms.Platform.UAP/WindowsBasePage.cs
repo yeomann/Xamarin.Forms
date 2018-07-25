@@ -27,8 +27,6 @@ namespace Xamarin.Forms.Platform.UWP
 			Application.SetCurrentApplication(application);
 			Platform = CreatePlatform();
 
-			VisualElement.Platform2 = Platform;
-
 			Platform.SetPage(Application.Current.MainPage);
 			application.PropertyChanged += OnApplicationPropertyChanged;
 
