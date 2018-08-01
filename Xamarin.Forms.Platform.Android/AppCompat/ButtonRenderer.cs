@@ -173,16 +173,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			UpdateTextColor();
 			UpdateEnabled();
 			UpdateBackgroundColor();
-			UpdateDrawable();
 			UpdatePadding();
-		}
-
-		void UpdateDrawable()
-		{
-			if (Element == null || Control == null)
-				return;
-
-			_backgroundTracker?.UpdateDrawable();
 		}
 
 		void UpdateBitmap()
