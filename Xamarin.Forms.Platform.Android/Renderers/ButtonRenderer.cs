@@ -82,6 +82,7 @@ namespace Xamarin.Forms.Platform.Android
 			if (disposing)
 			{
 				_backgroundTracker?.Dispose();
+				_backgroundTracker = null;
 			}
 
 			base.Dispose(disposing);

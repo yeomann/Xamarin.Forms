@@ -95,6 +95,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					_textColorSwitcher = null;
 				}
 				_backgroundTracker?.Dispose();
+				_backgroundTracker = null;
 			}
 
 			base.Dispose(disposing);

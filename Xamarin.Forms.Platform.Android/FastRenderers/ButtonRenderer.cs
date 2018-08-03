@@ -198,6 +198,7 @@ namespace Xamarin.Forms.Platform.Android.FastRenderers
 				_tracker?.Dispose();
 
 				_backgroundTracker?.Dispose();
+				_backgroundTracker = null;
 
 				if (Element != null)
 				{
