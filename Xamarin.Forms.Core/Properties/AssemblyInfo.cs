@@ -1,11 +1,7 @@
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using Xamarin.Forms;
 using Xamarin.Forms.Internals;
 using Xamarin.Forms.StyleSheets;
-
-[assembly: AssemblyVersion("2.0.0.0")]
-[assembly: AssemblyFileVersion("2.0.0.0")]
 
 [assembly: InternalsVisibleTo("iOSUnitTests")]
 [assembly: InternalsVisibleTo("Xamarin.Forms.Controls")]
@@ -44,7 +40,6 @@ using Xamarin.Forms.StyleSheets;
 [assembly: StyleProperty("border-color", typeof(IBorderElement), nameof(BorderElement.BorderColorProperty))]
 [assembly: StyleProperty("border-radius", typeof(ICornerElement), nameof(CornerElement.CornerRadiusProperty))]
 [assembly: StyleProperty("border-width", typeof(Button), nameof(Button.BorderWidthProperty))]
-[assembly: StyleProperty("color", typeof(IColorElement), nameof(ColorElement.ColorProperty), Inherited = true)]
 [assembly: StyleProperty("color", typeof(ITextElement), nameof(TextElement.TextColorProperty), Inherited = true)]
 [assembly: StyleProperty("direction", typeof(VisualElement), nameof(VisualElement.FlowDirectionProperty), Inherited = true)]
 [assembly: StyleProperty("font-family", typeof(IFontElement), nameof(FontElement.FontFamilyProperty), Inherited = true)]

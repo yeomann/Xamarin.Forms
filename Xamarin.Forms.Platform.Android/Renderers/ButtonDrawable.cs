@@ -63,25 +63,15 @@ namespace Xamarin.Forms.Platform.Android
 			if (width <= 0 || height <= 0)
 				return;
 
-			if (_normalBitmap == null ||
-				_normalBitmap?.IsDisposed() == true ||
-				_pressedBitmap?.IsDisposed() == true ||
-				_normalBitmap.Height != height ||
-				_normalBitmap.Width != width)
+			if (_normalBitmap == null || _normalBitmap.Height != height || _normalBitmap.Width != width)
+			{
 				Reset();
 
-			Bitmap bitmap = null;
-			if (GetState().Contains(global::Android.Resource.Attribute.StatePressed))
-			{
-				_pressedBitmap = _pressedBitmap ?? CreateBitmap(true, width, height);
-				bitmap = _pressedBitmap;
-			}
-			else
-			{
-				_normalBitmap = _normalBitmap ?? CreateBitmap(false, width, height);
-				bitmap = _normalBitmap;
+				_normalBitmap = CreateBitmap(false, width, height);
+				_pressedBitmap = CreateBitmap(true, width, height);
 			}
 
+			Bitmap bitmap = GetState().Contains(global::Android.Resource.Attribute.StatePressed) ? _pressedBitmap : _normalBitmap;
 			canvas.DrawBitmap(bitmap, 0, 0, new Paint());
 		}
 
@@ -105,21 +95,15 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (_normalBitmap != null)
 			{
-				if (!_normalBitmap.IsDisposed())
-				{
-					_normalBitmap.Recycle();
-					_normalBitmap.Dispose();
-				}
+				_normalBitmap.Recycle();
+				_normalBitmap.Dispose();
 				_normalBitmap = null;
 			}
 
 			if (_pressedBitmap != null)
 			{
-				if (!_pressedBitmap.IsDisposed())
-				{
-					_pressedBitmap.Recycle();
-					_pressedBitmap.Dispose();
-				}
+				_pressedBitmap.Recycle();
+				_pressedBitmap.Dispose();
 				_pressedBitmap = null;
 			}
 		}

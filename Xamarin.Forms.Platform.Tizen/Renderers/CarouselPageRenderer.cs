@@ -182,7 +182,6 @@ namespace Xamarin.Forms.Platform.Tizen
 		void UpdateCarouselContent()
 		{
 			_innerContainer.UnPackAll();
-			_layoutBound = new ESize(0, 0);
 			foreach (var page in Element.Children)
 			{
 				EvasObject nativeView = Platform.GetOrCreateRenderer(page).NativeView;

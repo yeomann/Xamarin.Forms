@@ -35,9 +35,6 @@ namespace Xamarin.Forms.Platform.UWP
 		WImageSource _titleIcon;
 		VisualElementTracker<Page, PageControl> _tracker;
 		EntranceThemeTransition _transition;
-		Platform _platform;
-
-		Platform Platform => _platform ?? (_platform = Platform.Current);
 
 		public NavigationPage Element { get; private set; }
 
@@ -636,9 +633,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (_showTitle || (render != null && render.ShowTitle))
 			{
-				if (Platform != null)
+				var platform = Element.Platform as Platform;
+				if (platform != null)
 				{
-					await Platform.UpdateToolbarItems();
+					await platform.UpdateToolbarItems();
 				}
 			}
 		}

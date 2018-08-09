@@ -217,8 +217,7 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			if (_isScrolling && _scrollCompleteDelegate != null)
 				_scrollCompleteDelegate();
-
-			if (_isScrolling && _swipeCompletedDelegate != null)
+			if (_swipeCompletedDelegate != null)
 				_swipeCompletedDelegate();
 
 			_isScrolling = false;

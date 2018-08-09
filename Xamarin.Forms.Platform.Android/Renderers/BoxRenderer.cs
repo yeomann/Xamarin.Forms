@@ -56,9 +56,6 @@ namespace Xamarin.Forms.Platform.Android
 		{
 			Color colorToSet = Element.Color;
 
-			if (colorToSet == Color.Default)
-				colorToSet = Element.BackgroundColor;
-
 			if (_backgroundDrawable == null)
 				_backgroundDrawable = new GradientDrawable();
 

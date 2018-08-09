@@ -273,21 +273,22 @@ namespace Xamarin.Forms.Platform.WPF
 			{
 				Children = new TransformCollection()
 				{
-					new RotateTransform()
+					new ScaleTransform
 					{
-						CenterX = anchorX,
-						CenterY = anchorY,
-						Angle = Element.Rotation
+						ScaleX = scale,
+						ScaleY = scale
 					},
 					new TranslateTransform()
 					{
 						X = offsetX,
 						Y = offsetY
 					},
-					new ScaleTransform
+					new RotateTransform()
 					{
-						ScaleX = scale,
-						ScaleY = scale
+
+						CenterX = anchorX,
+						CenterY = anchorY,
+						Angle = Element.Rotation,
 					}
 				}
 			};

@@ -281,19 +281,13 @@ namespace Xamarin.Forms
 				oldvalue.SourceChanged -= OnSourceChanged;
 		}
 
-		/// <summary>
-		/// Flag to prevent overwriting the value of CornerRadius
-		/// </summary>
-		bool cornerOrBorderRadiusSetting = false;
-
 		static void BorderRadiusPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
 		{
 			if (newvalue == oldvalue)
 				return;
 
-			var button = (Button)bindable;
 			var val = (int)newvalue;
-			if (val == DefaultBorderRadius && !button.cornerOrBorderRadiusSetting)
+			if (val == DefaultBorderRadius)
 				val = DefaultCornerRadius;
 
 			var oldVal = (int)bindable.GetValue(Button.CornerRadiusProperty);
@@ -301,9 +295,7 @@ namespace Xamarin.Forms
 			if (oldVal == val)
 				return;
 
-			button.cornerOrBorderRadiusSetting = true;
 			bindable.SetValue(Button.CornerRadiusProperty, val);
-			button.cornerOrBorderRadiusSetting = false;
 		}
 
 		static void CornerRadiusPropertyChanged(BindableObject bindable, object oldvalue, object newvalue)
@@ -311,9 +303,8 @@ namespace Xamarin.Forms
 			if (newvalue == oldvalue)
 				return;
 
-			var button = (Button)bindable;
 			var val = (int)newvalue;
-			if (val == DefaultCornerRadius && !button.cornerOrBorderRadiusSetting)
+			if (val == DefaultCornerRadius)
 				val = DefaultBorderRadius;
 
 #pragma warning disable 0618 // retain until BorderRadiusProperty removed
@@ -324,9 +315,7 @@ namespace Xamarin.Forms
 				return;
 
 #pragma warning disable 0618 // retain until BorderRadiusProperty removed
-			button.cornerOrBorderRadiusSetting = true;
 			bindable.SetValue(Button.BorderRadiusProperty, val);
-			button.cornerOrBorderRadiusSetting = false;
 #pragma warning restore
 		}
 

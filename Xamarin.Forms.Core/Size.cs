@@ -6,7 +6,6 @@ using System.Globalization;
 namespace Xamarin.Forms
 {
 	[DebuggerDisplay("Width={Width}, Height={Height}")]
-	[TypeConverter(typeof(SizeTypeConverter))]
 	public struct Size
 	{
 		double _width;

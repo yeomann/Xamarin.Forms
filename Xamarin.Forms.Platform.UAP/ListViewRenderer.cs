@@ -154,7 +154,7 @@ namespace Xamarin.Forms.Platform.UWP
 					break;
 			}
 
-			Device.BeginInvokeOnMainThread(() => List?.UpdateLayout());
+			Device.BeginInvokeOnMainThread(() => List.UpdateLayout());
 		}
 
 		protected override void OnElementPropertyChanged(object sender, PropertyChangedEventArgs e)
@@ -457,42 +457,37 @@ namespace Xamarin.Forms.Platform.UWP
 
 			var semanticLocation = new SemanticZoomLocation { Item = c };
 
-			// async scrolling
-			await Dispatcher.RunAsync(Windows.UI.Core.CoreDispatcherPriority.Normal, () =>
+			switch (toPosition)
 			{
-				switch (toPosition)
-				{
-					case ScrollToPosition.Start:
-						{
+				case ScrollToPosition.Start:
+					{
+						List.ScrollIntoView(c, ScrollIntoViewAlignment.Leading);
+						return;
+					}
 
-							List.ScrollIntoView(c, ScrollIntoViewAlignment.Leading);
-							return;
-						}
+				case ScrollToPosition.MakeVisible:
+					{
+						List.ScrollIntoView(c, ScrollIntoViewAlignment.Default);
+						return;
+					}
 
-					case ScrollToPosition.MakeVisible:
-						{
-							List.ScrollIntoView(c, ScrollIntoViewAlignment.Default);
-							return;
-						}
+				case ScrollToPosition.End:
+				case ScrollToPosition.Center:
+					{
+						var content = (FrameworkElement)List.ItemTemplate.LoadContent();
+						content.DataContext = c;
+						content.Measure(new Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
 
-					case ScrollToPosition.End:
-					case ScrollToPosition.Center:
-						{
-							var content = (FrameworkElement)List.ItemTemplate.LoadContent();
-							content.DataContext = c;
-							content.Measure(new Windows.Foundation.Size(viewer.ActualWidth, double.PositiveInfinity));
+						double tHeight = content.DesiredSize.Height;
 
-							double tHeight = content.DesiredSize.Height;
+						if (toPosition == ScrollToPosition.Center)
+							semanticLocation.Bounds = new Rect(0, viewportHeight / 2 - tHeight / 2, 0, 0);
+						else
+							semanticLocation.Bounds = new Rect(0, viewportHeight - tHeight, 0, 0);
 
-							if (toPosition == ScrollToPosition.Center)
-								semanticLocation.Bounds = new Rect(0, viewportHeight / 2 - tHeight / 2, 0, 0);
-							else
-								semanticLocation.Bounds = new Rect(0, viewportHeight - tHeight, 0, 0);
-
-							break;
-						}
-				}
-			});
+						break;
+					}
+			}
 
 			// Waiting for loaded doesn't seem to be enough anymore; the ScrollViewer does not appear until after Loaded.
 			// Even if the ScrollViewer is present, an invoke at low priority fails (E_FAIL) presumably because the items are

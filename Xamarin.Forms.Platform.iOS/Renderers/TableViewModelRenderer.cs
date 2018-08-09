@@ -32,7 +32,6 @@ namespace Xamarin.Forms.Platform.iOS
 			var cell = View.Model.GetCell(indexPath.Section, indexPath.Row);
 
 			var nativeCell = CellTableViewCell.GetNativeCell(tableView, cell);
-
 			return nativeCell;
 		}
 

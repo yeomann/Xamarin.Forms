@@ -120,6 +120,11 @@ namespace Xamarin.Forms.Platform.Android
 			}
 		}
 
+		public void UpdateBackgroundColor()
+		{
+			UpdateDrawable();
+		}
+
 		public void Dispose()
 		{
 			Dispose(true);

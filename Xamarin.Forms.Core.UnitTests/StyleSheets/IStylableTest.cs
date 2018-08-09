@@ -41,14 +41,6 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 		}
 
 		[TestCase]
-		public void GetPropertyDefinedOnType3()
-		{
-			var indicator = new ActivityIndicator();
-			var bp = ((IStylable)indicator).GetProperty("color", false);
-			Assert.AreSame(ActivityIndicator.ColorProperty, bp);
-		}
-
-		[TestCase]
 		public void GetInvalidPropertyForType()
 		{
 			var grid = new Grid();
@@ -71,5 +63,6 @@ namespace Xamarin.Forms.StyleSheets.UnitTests
 			var bp = ((IStylable)label).GetProperty("margin-right", false);
 			Assert.That(bp, Is.SameAs(View.MarginRightProperty));
 		}
+
 	}
 }

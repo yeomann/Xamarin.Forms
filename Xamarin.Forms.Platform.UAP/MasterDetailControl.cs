@@ -109,7 +109,7 @@ namespace Xamarin.Forms.Platform.UWP
 						width -= _masterPresenter.ActualWidth;
 				}
 
-				return new Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
+				return new Windows.Foundation.Size(width >= 0 ? width : 0, height);
 			}
 		}
 
@@ -181,7 +181,7 @@ namespace Xamarin.Forms.Platform.UWP
 				else if (_masterPresenter != null)
 					width = _masterPresenter.ActualWidth;
 
-				return new Windows.Foundation.Size(Math.Max(width, 0), Math.Max(height, 0));
+				return new Windows.Foundation.Size(width, height);
 			}
 		}
 

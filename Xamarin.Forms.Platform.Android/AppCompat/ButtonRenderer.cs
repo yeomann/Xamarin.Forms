@@ -95,7 +95,6 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 					_textColorSwitcher = null;
 				}
 				_backgroundTracker?.Dispose();
-				_backgroundTracker = null;
 			}
 
 			base.Dispose(disposing);
@@ -163,7 +162,7 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			if (Element == null || Control == null)
 				return;
 
-			_backgroundTracker?.UpdateDrawable();
+			_backgroundTracker?.UpdateBackgroundColor();
 		}
 
 		void UpdateAll()
@@ -174,7 +173,16 @@ namespace Xamarin.Forms.Platform.Android.AppCompat
 			UpdateTextColor();
 			UpdateEnabled();
 			UpdateBackgroundColor();
+			UpdateDrawable();
 			UpdatePadding();
+		}
+
+		void UpdateDrawable()
+		{
+			if (Element == null || Control == null)
+				return;
+
+			_backgroundTracker?.UpdateDrawable();
 		}
 
 		void UpdateBitmap()
