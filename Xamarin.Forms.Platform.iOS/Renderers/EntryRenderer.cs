@@ -365,8 +365,9 @@ namespace Xamarin.Forms.Platform.iOS
 			// We'll try again when the control does become first responder later OnEditingBegan
 			if (control.BecomeFirstResponder() && (Element.IsSet(Entry.CursorPositionProperty) || Element.IsSet(Entry.SelectionLengthProperty)))
 			{
-				var start = control.GetPosition(control.BeginningOfDocument, Element.CursorPosition);
-				var end = control.GetPosition(start, System.Math.Min(control.Text.Length - Element.CursorPosition, Element.SelectionLength));
+				int cursorPosition = Element.CursorPosition;
+				var start = control.GetPosition(control.BeginningOfDocument, cursorPosition);
+				var end = control.GetPosition(start, System.Math.Min(control.Text.Length - cursorPosition, Element.SelectionLength));
 				var currentSelection = control.SelectedTextRange;
 				if (currentSelection.Start != start || currentSelection.End != end)
 				{
