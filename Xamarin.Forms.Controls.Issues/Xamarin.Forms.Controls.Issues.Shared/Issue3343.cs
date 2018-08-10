@@ -11,12 +11,13 @@ namespace Xamarin.Forms.Controls.Issues
 		{
 			Entry entry = new Entry()
 			{
-				Text = "Initialized with CursorPosition and SelectionLength"
+				Text = "Initialized"
 			};
 
 			Entry entry2 = new Entry()
 			{
-				Text = "Click Button to set CursorPosition and SelectionLength"
+				Text = "Click Button",
+
 			};
 
 			entry.CursorPosition = 4;
@@ -37,6 +38,14 @@ namespace Xamarin.Forms.Controls.Issues
 								{
 									entry2.CursorPosition = 4;
 									entry2.SelectionLength = entry2.Text.Length;
+								})
+							},
+							new Button()
+							{
+								Text = "Click Me After",
+								Command = new Command(() =>
+								{
+									entry2.CursorPosition = 2;
 								})
 							}
 						}
