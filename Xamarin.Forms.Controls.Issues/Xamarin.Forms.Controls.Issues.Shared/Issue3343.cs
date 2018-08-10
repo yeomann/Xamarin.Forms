@@ -54,6 +54,24 @@ namespace Xamarin.Forms.Controls.Issues
 								Text = "Click Me Last",
 								Command = new Command(async () =>
 								{
+									try
+									{
+										entry2.SelectionLength = -2;
+									}
+									catch (System.ArgumentException)
+									{
+										System.Diagnostics.Debug.WriteLine("Yeah, don't use negative selection lengths.");
+									}
+
+									try
+									{
+										entry2.CursorPosition = -2;
+									}
+									catch (System.ArgumentException)
+									{
+										System.Diagnostics.Debug.WriteLine("Yeah, don't use negative cursor positions.");
+									}
+
 									entry2.ClearValue(Entry.SelectionLengthProperty);
 
 									await Task.Delay(500);
