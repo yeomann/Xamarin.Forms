@@ -26,6 +26,8 @@ namespace Xamarin.Forms.Platform.iOS
 
 		bool _cursorPositionChangePending = false;
 		bool _selectionLengthChangePending = false;
+		UITextPosition _defaultCursorStartPosition;
+		UITextPosition _defaultCursorEndPosition;
 
 		static readonly int baseHeight = 30;
 		static CGSize initialSize = CGSize.Empty;
@@ -360,15 +362,41 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_selectedTextRangeIsUpdating || control == null || Element == null)
 				return;
 
+			var currentSelection = control.SelectedTextRange;
+
+			if (_defaultCursorStartPosition == null)
+				_defaultCursorStartPosition = currentSelection.Start;
+
+			if (_defaultCursorEndPosition == null)
+				_defaultCursorEndPosition = currentSelection.End;
+
 			// If this is run from the ctor, the control is likely too early in its lifecycle to be first responder yet. 
 			// Anything done here will have no effect, so we'll skip this work until later.
 			// We'll try again when the control does become first responder later OnEditingBegan
-			if (control.BecomeFirstResponder() && (Element.IsSet(Entry.CursorPositionProperty) || Element.IsSet(Entry.SelectionLengthProperty)))
+			if (control.BecomeFirstResponder())
 			{
 				int cursorPosition = Element.CursorPosition;
-				var start = control.GetPosition(control.BeginningOfDocument, cursorPosition);
-				var end = control.GetPosition(start, System.Math.Min(control.Text.Length - cursorPosition, Element.SelectionLength));
-				var currentSelection = control.SelectedTextRange;
+
+				UITextPosition start;
+				if (Element.IsSet(Entry.CursorPositionProperty))
+					start = control.GetPosition(control.BeginningOfDocument, cursorPosition);
+				else
+					start = _defaultCursorStartPosition;
+
+				int startOffset = (int)control.GetOffsetFromPosition(control.BeginningOfDocument, start); 
+
+				UITextPosition end;
+				if (Element.IsSet(Entry.SelectionLengthProperty))
+					end = control.GetPosition(start, Math.Max(startOffset, Math.Min(control.Text.Length - cursorPosition, Element.SelectionLength)));
+				else
+					end = _defaultCursorEndPosition;
+
+				int endOffset = (int)control.GetOffsetFromPosition(control.BeginningOfDocument, end);
+
+				// Let's enforce that end is always greater than or equal to start
+				if (endOffset < startOffset)
+					end = start;
+
 				if (currentSelection.Start != start || currentSelection.End != end)
 				{
 					_selectedTextRangeIsUpdating = true;
