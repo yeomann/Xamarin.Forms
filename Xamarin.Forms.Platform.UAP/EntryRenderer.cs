@@ -20,6 +20,8 @@ namespace Xamarin.Forms.Platform.UWP
 		Brush _defaultPlaceholderColorFocusBrush;
 		bool _cursorPositionChangePending = false;
 		bool _selectionLengthChangePending = false;
+		int? _defaultCursorPosition;
+		int? _defaultSelectionLength;
 
 		IElementController ElementController => Element as IElementController;
 
@@ -291,7 +293,7 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (!_cursorPositionChangePending)
 			{
-				var start = cursorPosition; 
+				var start = cursorPosition;
 				int selectionStart = control.SelectionStart;
 				if (selectionStart != start)
 					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, selectionStart);
@@ -313,15 +315,19 @@ namespace Xamarin.Forms.Platform.UWP
 			if (control == null || Element == null)
 				return;
 
+			if (!_defaultSelectionLength.HasValue)
+				_defaultSelectionLength = control.SelectionLength;
+
+			int selectionLength;
 			if (Element.IsSet(Entry.SelectionLengthProperty))
+				selectionLength = System.Math.Min(control.Text.Length - Element.CursorPosition, Element.SelectionLength);
+			else
+				selectionLength = (int)_defaultSelectionLength;
+
+			if (selectionLength != control.SelectionLength)
 			{
-				int cursorPosition = Element.CursorPosition;
-				int selectionLength = System.Math.Min(control.Text.Length - cursorPosition, Element.SelectionLength);
-				if (selectionLength != control.SelectionLength)
-				{
-					control.SelectionLength = selectionLength;
-					control.Focus(FocusState.Programmatic);
-				}
+				control.SelectionLength = selectionLength;
+				control.Focus(FocusState.Programmatic);
 			}
 
 			_selectionLengthChangePending = false;
@@ -333,14 +339,19 @@ namespace Xamarin.Forms.Platform.UWP
 			if (control == null || Element == null)
 				return;
 
+			if (!_defaultCursorPosition.HasValue)
+				_defaultCursorPosition = control.SelectionStart;
+
+			int start;
 			if (Element.IsSet(Entry.CursorPositionProperty))
+				start = Element.CursorPosition;
+			else
+				start = (int)_defaultCursorPosition;
+
+			if (start != control.SelectionStart)
 			{
-				var start = Element.CursorPosition;
-				if (start != control.SelectionStart)
-				{
-					control.SelectionStart = start;
-					control.Focus(FocusState.Programmatic);
-				}
+				control.SelectionStart = start;
+				control.Focus(FocusState.Programmatic);
 
 				// Length is dependent on start, so we'll need to update it
 				UpdateSelectionLength();
