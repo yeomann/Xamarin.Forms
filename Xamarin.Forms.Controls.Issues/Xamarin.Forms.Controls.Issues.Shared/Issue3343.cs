@@ -1,4 +1,5 @@
-﻿using Xamarin.Forms.CustomAttributes;
+﻿using System.Threading.Tasks;
+using Xamarin.Forms.CustomAttributes;
 using Xamarin.Forms.Internals;
 
 namespace Xamarin.Forms.Controls.Issues
@@ -28,7 +29,7 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = 20,
 				Children =
 						{
-						new Label{ Text = "The first Entry should have all text selected starting at character 4. Click the button to trigger the same selection in the second Entry." },
+						new Label{ Text = "The first Entry should have all text selected starting at character 4. Click the first button to trigger the same selection in the second Entry. Click the second buttong to move the cursor position but keep the selection length to the end. Click the third button to clear the selection legnth and then the cursor position." },
 							entry,
 							entry2,
 							new Button()
@@ -46,6 +47,18 @@ namespace Xamarin.Forms.Controls.Issues
 								Command = new Command(() =>
 								{
 									entry2.CursorPosition = 2;
+								})
+							},
+							new Button()
+							{
+								Text = "Click Me Last",
+								Command = new Command(async () =>
+								{
+									entry2.ClearValue(Entry.SelectionLengthProperty);
+
+									await Task.Delay(500);
+
+									entry2.ClearValue(Entry.CursorPositionProperty);
 								})
 							}
 						}
