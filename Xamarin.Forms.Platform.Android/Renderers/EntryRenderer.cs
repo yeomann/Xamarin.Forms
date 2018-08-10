@@ -24,6 +24,8 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool _cursorPositionChangePending = false;
 		bool _selectionLengthChangePending = false;
+		int? _defaultSelectionStart;
+		int? _defaultSelectionEnd;
 
 		public EntryRenderer(Context context) : base(context)
 		{
@@ -176,8 +178,16 @@ namespace Xamarin.Forms.Platform.Android
 				UpdateImeOptions();
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
 				UpdateReturnType();
-			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName || e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+			else if (e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+			{
+				_selectionLengthChangePending = true;
 				UpdateCursorSelection();
+			}
+			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+			{
+				_cursorPositionChangePending = true;
+				UpdateCursorSelection();
+			}
 
 			base.OnElementPropertyChanged(sender, e);
 		}
@@ -327,16 +337,31 @@ namespace Xamarin.Forms.Platform.Android
 			if (control == null || Element == null)
 				return;
 
-			if (Element.IsSet(Entry.CursorPositionProperty) || Element.IsSet(Entry.SelectionLengthProperty))
-			{
-				var start = Element.CursorPosition;
-				var end = System.Math.Min(control.Length(), Element.CursorPosition + Element.SelectionLength);
+			if (!_defaultSelectionStart.HasValue)
+				_defaultSelectionStart = control.SelectionStart;
 
-				if (control.SelectionStart != start || control.SelectionEnd != end)
-				{
-					control.SetSelection(start, end);
-					control.RequestFocus();
-				}
+			if (!_defaultSelectionEnd.HasValue)
+				_defaultSelectionEnd = control.SelectionEnd;
+
+			int start;
+			if (Element.IsSet(Entry.CursorPositionProperty))
+				start = Element.CursorPosition;
+			else
+				start = (int)_defaultSelectionStart;
+
+			int end;
+			if (Element.IsSet(Entry.SelectionLengthProperty))
+				end = System.Math.Min(control.Length(), start + Element.SelectionLength);
+			else
+				end = (int)_defaultSelectionEnd;
+
+			// Let's enforce that end is always greater than or equal to start
+			end = System.Math.Max(start, end);
+
+			if (control.SelectionStart != start || control.SelectionEnd != end)
+			{
+				control.SetSelection(start, end);
+				control.RequestFocus();
 			}
 
 			_cursorPositionChangePending = _selectionLengthChangePending = false;
