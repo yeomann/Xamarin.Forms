@@ -289,7 +289,8 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (!_cursorPositionChangePending)
 			{
-				var start = Element.CursorPosition;
+				int cursorPosition = Element.CursorPosition;
+				var start = cursorPosition;
 
 				if (control.SelectionStart != start)
 					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, control.SelectionStart);
@@ -297,9 +298,11 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (!_selectionLengthChangePending)
 			{
-				var selectionLength = control.SelectionLength;
-				if (selectionLength != Element.SelectionLength)
-					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+				int elementSelectionLength = System.Math.Min(control.Text.Length - cursorPosition, Element.SelectionLength);
+
+				var controlSelectionLength = control.SelectionLength;
+				if (controlSelectionLength != Element.SelectionLength)
+					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, controlSelectionLength);
 			}
 		}
 
