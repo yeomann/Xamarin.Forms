@@ -300,9 +300,11 @@ namespace Xamarin.Forms.Platform.Android
 			if (control == null || Element == null)
 				return;
 
+			int cursorPosition = Element.CursorPosition;
+
 			if (!_cursorPositionChangePending)
 			{
-				var start = Element.CursorPosition;
+				var start = cursorPosition;
 
 				if (control.SelectionStart != start)
 					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, control.SelectionStart);
@@ -310,9 +312,11 @@ namespace Xamarin.Forms.Platform.Android
 
 			if (!_selectionLengthChangePending)
 			{
-				var selectionLength = control.SelectionEnd - control.SelectionStart;
-				if (selectionLength != Element.SelectionLength)
-					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, selectionLength);
+				int elementSelectionLength = System.Math.Min(control.Text.Length - cursorPosition, Element.SelectionLength);
+
+				var controlSelectionLength = control.SelectionEnd - control.SelectionStart;
+				if (controlSelectionLength != elementSelectionLength)
+					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, controlSelectionLength);
 			}
 		}
 
