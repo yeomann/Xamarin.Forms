@@ -164,8 +164,16 @@ namespace Xamarin.Forms.Platform.iOS
 				UpdateMaxLength();
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
 				UpdateReturnType();
-			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName || e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+			{
+				_cursorPositionChangePending = true;
 				UpdateCursorSelection();
+			}
+			else if (e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+			{
+				_selectionLengthChangePending = true;
+				UpdateCursorSelection();
+			}
 			else if (e.PropertyName == Specifics.CursorColorProperty.PropertyName)
 				UpdateCursorColor();
 
@@ -359,7 +367,7 @@ namespace Xamarin.Forms.Platform.iOS
 		void UpdateCursorSelection()
 		{
 			var control = Control;
-			if (_selectedTextRangeIsUpdating || control == null || Element == null)
+			if (_selectedTextRangeIsUpdating || !(_cursorPositionChangePending || _selectionLengthChangePending) || control == null || Element == null)
 				return;
 
 			// Assume that a custom renderer might have set a SelectedTextRange
@@ -418,9 +426,9 @@ namespace Xamarin.Forms.Platform.iOS
 					control.SelectedTextRange = control.GetTextRange(start, end);
 					_selectedTextRangeIsUpdating = false;
 				}
-			}
 
-			_cursorPositionChangePending = _selectionLengthChangePending = false;
+				_cursorPositionChangePending = _selectionLengthChangePending = false;
+			}
 		}
 
 		void UpdateCursorColor()
