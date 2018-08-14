@@ -24,6 +24,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		bool _cursorPositionChangePending = false;
 		bool _selectionLengthChangePending = false;
+		bool _selectionIsUpdating;
 		int? _defaultSelectionStart;
 		int? _defaultSelectionEnd;
 
@@ -306,8 +307,7 @@ namespace Xamarin.Forms.Platform.Android
 
 		void SelectionChanged(object sender, SelectionChangedEventArgs e)
 		{
-			var control = Control;
-			if (control == null || Element == null)
+			if (_selectionIsUpdating || Control == null || Element == null)
 				return;
 
 			int cursorPosition = Element.CursorPosition;
@@ -316,52 +316,68 @@ namespace Xamarin.Forms.Platform.Android
 			{
 				var start = cursorPosition;
 
-				if (control.SelectionStart != start)
-					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, control.SelectionStart);
+				if (Control.SelectionStart != start)
+				{
+					_selectionIsUpdating = true;
+					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, Control.SelectionStart);
+				}
 			}
 
 			if (!_selectionLengthChangePending)
 			{
-				int elementSelectionLength = System.Math.Min(control.Text.Length - cursorPosition, Element.SelectionLength);
+				int elementSelectionLength = System.Math.Min(Control.Text.Length - cursorPosition, Element.SelectionLength);
 
-				var controlSelectionLength = control.SelectionEnd - control.SelectionStart;
+				var controlSelectionLength = Control.SelectionEnd - Control.SelectionStart;
 				if (controlSelectionLength != elementSelectionLength)
+				{
+					_selectionIsUpdating = true;
 					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, controlSelectionLength);
+				}
 			}
+			_selectionIsUpdating = false;
 		}
-
 
 		void UpdateCursorSelection()
 		{
-			var control = Control;
-			if (control == null || Element == null)
+			if (_selectionIsUpdating || !(_cursorPositionChangePending || _selectionLengthChangePending) || Control == null || Element == null)
 				return;
 
+			int selectionStart = Control.SelectionStart;
 			if (!_defaultSelectionStart.HasValue)
-				_defaultSelectionStart = control.SelectionStart;
+				_defaultSelectionStart = selectionStart;
 
+			int selectionEnd = Control.SelectionEnd;
 			if (!_defaultSelectionEnd.HasValue)
-				_defaultSelectionEnd = control.SelectionEnd;
+				_defaultSelectionEnd = selectionEnd;
 
 			int start;
-			if (Element.IsSet(Entry.CursorPositionProperty))
+			bool cursorPositionSet = Element.IsSet(Entry.CursorPositionProperty);
+			if (cursorPositionSet)
 				start = Element.CursorPosition;
 			else
 				start = (int)_defaultSelectionStart;
 
 			int end;
-			if (Element.IsSet(Entry.SelectionLengthProperty))
-				end = System.Math.Min(control.Length(), start + Element.SelectionLength);
+			bool selectionLengthSet = Element.IsSet(Entry.SelectionLengthProperty);
+			if (selectionLengthSet)
+				end = System.Math.Min(Control.Length(), start + Element.SelectionLength);
 			else
 				end = (int)_defaultSelectionEnd;
 
 			// Let's enforce that end is always greater than or equal to start
 			end = System.Math.Max(start, end);
 
-			if (control.SelectionStart != start || control.SelectionEnd != end)
+			// And if we just cleared both set values and our custom renderer didn't have a Selection, default to end of text
+			// Our biggest risk here is that a custom renderer is explicitly setting the start and end position to 0
+			if (!cursorPositionSet && !selectionLengthSet && start == 0 && end == 0)
+				end = start = Control.Length();
+
+			if (selectionStart != start || selectionEnd != end)
 			{
-				control.SetSelection(start, end);
-				control.RequestFocus();
+				_selectionIsUpdating = true;
+				Control.SetSelection(start, end);
+				Control.RequestFocus();
+				_selectionIsUpdating = false;
 			}
 
 			_cursorPositionChangePending = _selectionLengthChangePending = false;
