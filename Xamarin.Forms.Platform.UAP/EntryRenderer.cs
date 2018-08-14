@@ -20,6 +20,7 @@ namespace Xamarin.Forms.Platform.UWP
 		Brush _defaultPlaceholderColorFocusBrush;
 		bool _cursorPositionChangePending = false;
 		bool _selectionLengthChangePending = false;
+		bool _selectionIsUpdating;
 		int? _defaultCursorPosition;
 		int? _defaultSelectionLength;
 
@@ -286,7 +287,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void SelectionChanged(object sender, RoutedEventArgs e)
 		{
 			var control = Control;
-			if (control == null || Element == null)
+			if (_selectionIsUpdating || control == null || Element == null)
 				return;
 
 			int cursorPosition = Element.CursorPosition;
@@ -296,7 +297,10 @@ namespace Xamarin.Forms.Platform.UWP
 				var start = cursorPosition;
 				int selectionStart = control.SelectionStart;
 				if (selectionStart != start)
+				{
+					_selectionIsUpdating = true;
 					ElementController?.SetValueFromRenderer(Entry.CursorPositionProperty, selectionStart);
+				}
 			}
 
 			if (!_selectionLengthChangePending)
@@ -305,14 +309,19 @@ namespace Xamarin.Forms.Platform.UWP
 
 				int controlSelectionLength = control.SelectionLength;
 				if (controlSelectionLength != elementSelectionLength)
+				{
+					_selectionIsUpdating = true;
 					ElementController?.SetValueFromRenderer(Entry.SelectionLengthProperty, controlSelectionLength);
+				}
 			}
+
+			_selectionIsUpdating = false;
 		}
 
 		void UpdateSelectionLength()
 		{
 			var control = Control;
-			if (control == null || Element == null)
+			if (_selectionIsUpdating || control == null || Element == null)
 				return;
 
 			if (!_defaultSelectionLength.HasValue)
@@ -326,8 +335,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (selectionLength != control.SelectionLength)
 			{
+				_selectionIsUpdating = true;
 				control.SelectionLength = selectionLength;
 				control.Focus(FocusState.Programmatic);
+				_selectionIsUpdating = false;
 			}
 
 			_selectionLengthChangePending = false;
@@ -336,7 +347,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateCursorPosition()
 		{
 			var control = Control;
-			if (control == null || Element == null)
+			if (_selectionIsUpdating || control == null || Element == null)
 				return;
 
 			if (!_defaultCursorPosition.HasValue)
@@ -350,8 +361,10 @@ namespace Xamarin.Forms.Platform.UWP
 
 			if (start != control.SelectionStart)
 			{
+				_selectionIsUpdating = true;
 				control.SelectionStart = start;
 				control.Focus(FocusState.Programmatic);
+				_selectionIsUpdating = false;
 
 				// Length is dependent on start, so we'll need to update it
 				UpdateSelectionLength();
