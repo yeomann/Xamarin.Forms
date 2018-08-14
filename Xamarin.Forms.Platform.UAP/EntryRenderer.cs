@@ -116,9 +116,15 @@ namespace Xamarin.Forms.Platform.UWP
 			else if (e.PropertyName == Entry.ReturnTypeProperty.PropertyName)
 				UpdateReturnType();
 			else if (e.PropertyName == Entry.CursorPositionProperty.PropertyName)
+			{
+				_cursorPositionChangePending = true;
 				UpdateCursorPosition();
+			}
 			else if (e.PropertyName == Entry.SelectionLengthProperty.PropertyName)
+			{
+				_selectionLengthChangePending = true;
 				UpdateSelectionLength();
+			}
 		}
 
 		protected override void UpdateBackgroundColor()
@@ -321,7 +327,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateSelectionLength()
 		{
 			var control = Control;
-			if (_selectionIsUpdating || control == null || Element == null)
+			if (_selectionIsUpdating || !_selectionLengthChangePending || control == null || Element == null)
 				return;
 
 			if (!_defaultSelectionLength.HasValue)
@@ -347,7 +353,7 @@ namespace Xamarin.Forms.Platform.UWP
 		void UpdateCursorPosition()
 		{
 			var control = Control;
-			if (_selectionIsUpdating || control == null || Element == null)
+			if (_selectionIsUpdating || !_cursorPositionChangePending || control == null || Element == null )
 				return;
 
 			if (!_defaultCursorPosition.HasValue)
@@ -367,6 +373,7 @@ namespace Xamarin.Forms.Platform.UWP
 				_selectionIsUpdating = false;
 
 				// Length is dependent on start, so we'll need to update it
+				_selectionLengthChangePending = true;
 				UpdateSelectionLength();
 			}
 
