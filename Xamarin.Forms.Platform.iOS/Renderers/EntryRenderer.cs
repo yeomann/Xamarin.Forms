@@ -362,6 +362,8 @@ namespace Xamarin.Forms.Platform.iOS
 			if (_selectedTextRangeIsUpdating || control == null || Element == null)
 				return;
 
+			// Assume that a custom renderer might have set a SelectedTextRange
+			// Get default values from that SelectedTextRange so we do not interfere
 			var currentSelection = control.SelectedTextRange;
 
 			if (_defaultCursorStartPosition == null)
@@ -378,24 +380,34 @@ namespace Xamarin.Forms.Platform.iOS
 				int cursorPosition = Element.CursorPosition;
 
 				UITextPosition start;
-				if (Element.IsSet(Entry.CursorPositionProperty))
+				bool cursorPositionSet = Element.IsSet(Entry.CursorPositionProperty);
+				if (cursorPositionSet)
 					start = control.GetPosition(control.BeginningOfDocument, cursorPosition);
 				else
 					start = _defaultCursorStartPosition;
 
-				int startOffset = (int)control.GetOffsetFromPosition(control.BeginningOfDocument, start); 
+				int startOffset = (int)control.GetOffsetFromPosition(control.BeginningOfDocument, start);
 
 				UITextPosition end;
-				if (Element.IsSet(Entry.SelectionLengthProperty))
+				bool selectionLengthSet = Element.IsSet(Entry.SelectionLengthProperty);
+				if (selectionLengthSet)
 					end = control.GetPosition(start, Math.Max(startOffset, Math.Min(control.Text.Length - cursorPosition, Element.SelectionLength)));
 				else
 					end = _defaultCursorEndPosition;
+
+				if (end == null)
+					end = start;
 
 				int endOffset = (int)control.GetOffsetFromPosition(control.BeginningOfDocument, end);
 
 				// Let's enforce that end is always greater than or equal to start
 				if (endOffset < startOffset)
 					end = start;
+
+				// And if we just cleared both set values and our custom renderer didn't have a SelectedTextRange, default to end of text
+				// Our biggest risk here is that a custom renderer is explicitly setting the start and end position to 0
+				if (!cursorPositionSet && !selectionLengthSet && startOffset == 0)
+					end = start = control.EndOfDocument;
 
 				if (currentSelection.Start != start || currentSelection.End != end)
 				{
