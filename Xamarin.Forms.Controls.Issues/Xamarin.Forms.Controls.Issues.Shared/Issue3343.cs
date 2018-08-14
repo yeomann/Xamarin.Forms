@@ -17,12 +17,14 @@ namespace Xamarin.Forms.Controls.Issues
 
 			Entry entry2 = new Entry()
 			{
-				Text = "Click Button",
-
+				Text = "Click Button"
 			};
 
 			entry.CursorPosition = 4;
 			entry.SelectionLength = entry.Text.Length;
+
+			// When the Entry is in a NavPage, the Entry doesn't get first focus on UWP
+			string uwp_instructions = Device.RuntimePlatform == Device.UWP ? "Press Tab to focus the first entry. " : "";
 
 			Content = new StackLayout()
 			{
@@ -78,7 +80,7 @@ namespace Xamarin.Forms.Controls.Issues
 									entry2.ClearValue(Entry.CursorPositionProperty);
 								})
 							},
-							new Label{ Text = "The first Entry should have all text selected starting at character 4. Click the first button to trigger the same selection in the second Entry. Click the second button to move the cursor position but keep the selection length to the end. Click the third button to clear the selection length and then the cursor position." }
+							new Label{ Text = $"{uwp_instructions}The first Entry should have all text selected starting at character 4. Click the first button to trigger the same selection in the second Entry. Click the second button to move the cursor position but keep the selection length to the end. Click the third button to clear the selection length and then the cursor position." }
 						}
 			};
 		}
