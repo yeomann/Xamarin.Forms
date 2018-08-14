@@ -402,11 +402,14 @@ namespace Xamarin.Forms.Platform.iOS
 
 				// Let's enforce that end is always greater than or equal to start
 				if (endOffset < startOffset)
+				{
 					end = start;
+					endOffset = startOffset;
+				}
 
 				// And if we just cleared both set values and our custom renderer didn't have a SelectedTextRange, default to end of text
 				// Our biggest risk here is that a custom renderer is explicitly setting the start and end position to 0
-				if (!cursorPositionSet && !selectionLengthSet && startOffset == 0)
+				if (!cursorPositionSet && !selectionLengthSet && startOffset == 0 && endOffset == 0)
 					end = start = control.EndOfDocument;
 
 				if (currentSelection.Start != start || currentSelection.End != end)
