@@ -29,7 +29,6 @@ namespace Xamarin.Forms.Controls.Issues
 				Padding = 20,
 				Children =
 						{
-						new Label{ Text = "The first Entry should have all text selected starting at character 4. Click the first button to trigger the same selection in the second Entry. Click the second buttong to move the cursor position but keep the selection length to the end. Click the third button to clear the selection legnth and then the cursor position." },
 							entry,
 							entry2,
 							new Button()
@@ -78,7 +77,8 @@ namespace Xamarin.Forms.Controls.Issues
 
 									entry2.ClearValue(Entry.CursorPositionProperty);
 								})
-							}
+							},
+							new Label{ Text = "The first Entry should have all text selected starting at character 4. Click the first button to trigger the same selection in the second Entry. Click the second button to move the cursor position but keep the selection length to the end. Click the third button to clear the selection length and then the cursor position." }
 						}
 			};
 		}
